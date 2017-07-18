@@ -159,7 +159,19 @@ for index in range(1, int(last_page_number) + 1):
                 page_url = r['href'] + '/' + str(page)
 
                 # 获取图片地址
-                res_img = BeautifulSoup(get(page_url).text, 'lxml').find('div', class_='main-image').find('img')['src']
+                res_soup = BeautifulSoup(get(page_url).text, 'lxml')
+                # 解决AttributeError异常
+                flag = 0
+                while flag == 0:
+                    try:
+                        res_img = res_soup.find('div', class_='main-image').find('img')['src']
+                        flag = 1
+                    except AttributeError:
+                        print('捕获AttributeError异常，1s后重试')
+                        time.sleep(3)
+                        res_soup = BeautifulSoup(get(page_url).text, 'lxml')
+                        continue
+
                 # 为图片起名
                 name = str(res_img).split('/')[-1]
                 # 向图片地址发起请求并获取response
