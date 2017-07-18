@@ -154,7 +154,19 @@ for index in range(1, int(last_page_number) + 1):
 
             html = get(r['href']).text
             res_soup = BeautifulSoup(html, 'lxml')
-            max_span = res_soup.find('div', class_='pagenavi').findAll('span')[-2].get_text()
+
+            # 解决AttributeError异常
+            flag = 0
+            while flag == 0:
+                try:
+                    max_span = res_soup.find('div', class_='pagenavi').findAll('span')[-2].get_text()
+                    flag = 1
+                except AttributeError:
+                    print('捕获AttributeError异常，1s后重试')
+                    time.sleep(3)
+                    res_soup = BeautifulSoup(html, 'lxml')
+                    continue
+
             for page in range(1, int(max_span) + 1):
                 page_url = r['href'] + '/' + str(page)
 
