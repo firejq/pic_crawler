@@ -120,13 +120,19 @@ for index in range(1, int(last_page_number) + 1):
     url = index_url + '/page/' + str(index)
     Soup = BeautifulSoup(get(url).text, 'lxml')
 
-    # li_list = Soup.find_all('li')
-    # for li in li_list:
-    #     print(li)
-    # print(type(Soup))
-    all_a = Soup.find('ul', id='pins').findAll('span')
-    # print(type(all_a))
-    # print(all_a)
+    # 为解决因网络问题随机出现的AttributeError异常，加此循环逻辑
+    # TODO 寻找更好的解决方案
+    flag = 0
+    while flag == 0:
+        try:
+            all_a = Soup.find('ul', id='pins').findAll('span')
+            flag = 1
+        except AttributeError:
+            print('捕获AttributeError异常，1s后重试')
+            time.sleep(5)
+            Soup = BeautifulSoup(get(url).text, 'lxml')
+            continue
+
     for i in range(0, len(all_a)):
         all_a[i] = all_a[i].find('a')
     all_a = all_a[0:len(all_a):3]
