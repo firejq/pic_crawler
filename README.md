@@ -1,6 +1,9 @@
 ## Picture Crawler
+A image crawler for [mzitu](http://www.mzitu.com/, "mzitu")   
 
+## Use
 
+Run the script and then get all the images in *D:\mzitu*
 
 ## Features
 - [x] Dynamic IP Proxy   
