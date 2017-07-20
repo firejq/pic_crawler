@@ -10,3 +10,5 @@ Run the script and then get all the images in *D:\mzitu*
 - [ ] Multitasking by Coroutines  
 - [ ] Anti-duplicate data with MongoDB  
 
+
+
