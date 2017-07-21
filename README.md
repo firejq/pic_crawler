@@ -8,7 +8,7 @@ Run the script and then get all the images in *D:\mzitu*
 - [x] Dynamic IP Proxy   
 - [x] Dynamic UserAgent  
 - [ ] Multitasking by Coroutines  
-- [ ] Anti-duplicate data with MongoDB  
+- [ ] Anti-duplicate data with MongoDB   
 
 
 
