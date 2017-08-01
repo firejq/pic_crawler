@@ -1,10 +1,10 @@
-import random
-import re
-import requests
 import os
+import random
 import time
 
+import requests
 from bs4 import BeautifulSoup
+
 
 # def getips():
 #     '''
@@ -19,6 +19,7 @@ from bs4 import BeautifulSoup
 #         iplist.append(i.strip())
 #         # print(i.strip())
 #     return iplist
+
 
 def getips():
     '''
@@ -40,7 +41,6 @@ def getips():
     return ip_list
 
 
-
 def get(url, timeout=None, proxy=None, num_retries=6):
     '''
     自定义请求逻辑：
@@ -49,16 +49,17 @@ def get(url, timeout=None, proxy=None, num_retries=6):
     若重试6次之后仍旧失败，开始使用代理ip，
     若使用代理ip请求失败，则随机更换代理ip，最高尝试更换6次代理ip，
     更换6次代理ip后仍旧请求失败，放弃使用代理，延长timeout直接连接
-    :param url: 
-    :param timeout: 
-    :param proxy: 
-    :param num_retries: 
-    :return: 
+    :param url:
+    :param timeout:
+    :param proxy:
+    :param num_retries:
+    :return:
     '''
     UserAgents = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3072.0 Safari/537.36',
         'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.32',''
+        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.32',
+        ''
         'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2',
         'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
         'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
@@ -68,17 +69,16 @@ def get(url, timeout=None, proxy=None, num_retries=6):
         'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Maxthon/4.9.2.1000 Chrome/39.0.2146.0 Safari/537.36',
         'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36 Core/1.47.277.400 QQBrowser/9.4.7658.400',
         'Mozilla/5.0 (Linux; Android 5.0; SM-N9100 Build/LRX21V) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/37.0.0.0 Mobile Safari/537.36 MicroMessenger/6.0.2.56_r958800.520 NetType/WIFI',
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Mobile/11D257 QQ/5.2.1.302 NetType/WIFI Mem/28'
-    ]
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Mobile/11D257 QQ/5.2.1.302 NetType/WIFI Mem/28']
     headers = {'User-Agent': random.choice(UserAgents)}
     if proxy is None:
         try:
             return requests.get(url, headers=headers, timeout=timeout)
-        except:
+        except BaseException:
             if num_retries > 0:  # num_retries:限定的重试次数
                 print(u'获取网页出错，10s后将重新获取，倒数第：', num_retries, u'次')
                 time.sleep(10)
-                return get(url, timeout, num_retries=(num_retries-1))
+                return get(url, timeout, num_retries=(num_retries - 1))
             else:
                 print(u'重试6次失败，开始使用代理')
                 time.sleep(10)
@@ -93,7 +93,7 @@ def get(url, timeout=None, proxy=None, num_retries=6):
             proxy = {'http': IP}
             print(u'当前代理是：', proxy)
             return requests.get(url, headers=headers, proxies=proxy)
-        except:
+        except BaseException:
             if num_retries > 0:
                 time.sleep(10)
                 iplist = getips()
@@ -107,12 +107,13 @@ def get(url, timeout=None, proxy=None, num_retries=6):
                 return get(url, 3)
 
 
-
 index_url = 'http://www.mzitu.com'
 start_html = get(index_url)
 Soup = BeautifulSoup(start_html.text, 'xml')
 
-last_page_url = Soup.find('div', class_='nav-links').findAll('a', class_='page-numbers')[-1]['href']
+last_page_url = Soup.find('div',
+                          class_='nav-links').findAll('a',
+                                                      class_='page-numbers')[-1]['href']
 last_page_number = str(last_page_url).split('/')[-2]
 
 for index in range(1, int(last_page_number) + 1):
@@ -142,7 +143,28 @@ for index in range(1, int(last_page_number) + 1):
         res.append({'href': all_a[i]['href'], 'text': all_a[i].get_text()})
     for r in res:
         print(r['href'], r['text'])
-        dirname = str(r['text']).replace(' ', '_').replace('\\', '_').replace('/', '_').replace(':', '_').replace('*', '_').replace('?', '_').replace('"', '_').replace('<', '_').replace('>', '_').replace('|', '_')
+        dirname = str(
+            r['text']).replace(
+            ' ',
+            '_').replace(
+            '\\',
+            '_').replace(
+                '/',
+                '_').replace(
+                    ':',
+                    '_').replace(
+                        '*',
+                        '_').replace(
+                            '?',
+                            '_').replace(
+                                '"',
+                                '_').replace(
+                                    '<',
+                                    '_').replace(
+                                        '>',
+                                        '_').replace(
+                                            '|',
+            '_')
         path = os.path.join('D:\\mzitu', dirname)
 
         if os.path.exists(path):
@@ -159,7 +181,8 @@ for index in range(1, int(last_page_number) + 1):
             flag = 0
             while flag == 0:
                 try:
-                    max_span = res_soup.find('div', class_='pagenavi').findAll('span')[-2].get_text()
+                    max_span = res_soup.find('div', class_='pagenavi').findAll(
+                        'span')[-2].get_text()
                     flag = 1
                 except AttributeError:
                     print('捕获AttributeError异常，1s后重试')
@@ -176,7 +199,8 @@ for index in range(1, int(last_page_number) + 1):
                 flag = 0
                 while flag == 0:
                     try:
-                        res_img = res_soup.find('div', class_='main-image').find('img')['src']
+                        res_img = res_soup.find(
+                            'div', class_='main-image').find('img')['src']
                         flag = 1
                     except AttributeError:
                         print('捕获AttributeError异常，1s后重试')
@@ -197,28 +221,3 @@ for index in range(1, int(last_page_number) + 1):
 
                 # time.sleep(1)
     print('第', index, '页爬取完毕')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
