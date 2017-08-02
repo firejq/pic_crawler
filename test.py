@@ -1,6 +1,11 @@
 import os
 import random
 import time
+
+import requests
+from bs4 import BeautifulSoup
+
+
 # def getips():
 #     '''
 #     爬取haoip.cc上可用的代理ip
@@ -14,11 +19,6 @@ import time
 #         iplist.append(i.strip())
 #         # print(i.strip())
 #     return iplist
-from multiprocessing import Queue
-from threading import Thread
-
-import requests
-from bs4 import BeautifulSoup
 
 
 def getips():
@@ -108,22 +108,6 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
                 print(u'更换6次代理仍旧失败，代理可能已失效，取消代理')
                 return get(url, 3)
 
-def download(queue):
-    while not queue.empty():
-        res_img = queue.get()
-
-        # 为图片起名
-        name = str(res_img).split('/')[-1]
-        # 向图片地址发起请求并获取response
-        extra = ['Referer', r['href']]
-        img = get(url=res_img, extra=extra)
-        # 在本地以追加模式创建二进制文件
-        f = open(name, 'ab')
-        # 将response的二进制内容写入到文件中
-        f.write(img.content)
-        # 关闭文件流对象
-        f.close()
-
 
 if __name__ == '__main__':
     index_url = 'http://www.mzitu.com'
@@ -160,28 +144,7 @@ if __name__ == '__main__':
             res.append({'href': all_a[i]['href'], 'text': all_a[i].get_text()})
         for r in res:
             print(r['href'], r['text'])
-            dirname = str(
-                r['text']).replace(
-                ' ',
-                '_').replace(
-                '\\',
-                '_').replace(
-                    '/',
-                    '_').replace(
-                        ':',
-                        '_').replace(
-                            '*',
-                            '_').replace(
-                                '?',
-                                '_').replace(
-                                    '"',
-                                    '_').replace(
-                                        '<',
-                                        '_').replace(
-                                            '>',
-                                            '_').replace(
-                                                '|',
-                '_')
+            dirname = str(r['text']).replace(' ', '_').replace('\\', '_').replace('/', '_').replace(':', '_').replace('*', '_').replace('?', '_').replace('"', '_').replace('<', '_').replace('>', '_').replace('|', '_')
             path = os.path.join('D:\\mzitu', dirname)
 
             if os.path.exists(path):
@@ -206,7 +169,6 @@ if __name__ == '__main__':
                         res_soup = BeautifulSoup(html, 'lxml')
                         continue
 
-                queue = Queue(maxsize=500)
                 for page in range(1, int(max_span) + 1):
                     page_url = r['href'] + '/' + str(page)
 
@@ -223,19 +185,23 @@ if __name__ == '__main__':
                             time.sleep(3)
                             res_soup = BeautifulSoup(get(page_url).text, 'lxml')
                             continue
-                    # 将该主题的所有url放到队列中
-                    queue.put(res_img)
+                    # queue = Queue(maxsize=500)
+                    # queue.put(res_img)
 
-                # 多线程下载队列中的所有url
-                thread_number = 16
-                for i in range(thread_number):
-                    thread = Thread(target=download, args=(queue,))
-                    thread.start()
-                    thread.join()
+                    # print(res_img)
+                    # exit(0)
 
-                while not queue.empty():
-                    time.sleep(0.5)
-                    continue
+                    # 为图片起名
+                    name = str(res_img).split('/')[-1]
+                    # 向图片地址发起请求并获取response
+                    extra = ['Referer', r['href']]
+                    img = get(url=res_img, extra=extra)
+                    # 在本地以追加模式创建二进制文件
+                    f = open(name, 'ab')
+                    # 将response的二进制内容写入到文件中
+                    f.write(img.content)
+                    # 关闭文件流对象
+                    f.close()
 
-                # time.sleep(1)
+                    # time.sleep(1)
         print('第', index, '页爬取完毕')
