@@ -78,7 +78,8 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
             return requests.get(url, headers=headers, timeout=timeout)
         except BaseException:
             if num_retries > 0:  # num_retries:限定的重试次数
-                print(u'获取网页出错，10s后将重新获取，倒数第：', num_retries, u'次')
+                print(u'获取网页出错，10s后将重新获取，倒数第：',
+                      num_retries, u'次')
                 time.sleep(10)
                 return get(url, timeout, num_retries=(num_retries - 1))
             else:
@@ -101,12 +102,14 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
                 iplist = getips()
                 IP = ''.join(str(random.choice(iplist)).strip())
                 proxy = {'http': IP}
-                print(u'使用代理获取网页失败，正在更换代理，10S后将重新获取倒数第', num_retries, u'次')
+                print(u'使用代理获取网页失败，正在更换代理，10S后将重新获取倒数第',
+                      num_retries, u'次')
                 print(u'当前代理是：', proxy)
                 return get(url, timeout, proxy, num_retries - 1)
             else:
                 print(u'更换6次代理仍旧失败，代理可能已失效，取消代理')
                 return get(url, 3)
+
 
 def img_download(img_queue, topic_url):
     while not img_queue.empty():
@@ -123,6 +126,7 @@ def img_download(img_queue, topic_url):
         f.write(img.content)
         # 关闭文件流对象
         f.close()
+
 
 def topic_download(topic_queue):
     while not topic_queue.empty():
@@ -153,7 +157,8 @@ def topic_download(topic_queue):
             flag = 0
             while flag == 0:
                 try:
-                    max_span = res_soup.find('div', class_='pagenavi').findAll('span')[-2].get_text()
+                    max_span = res_soup.find('div', class_='pagenavi').findAll(
+                        'span')[-2].get_text()
                     flag = 1
                 except AttributeError:
                     print('捕获AttributeError异常，1s后重试')
@@ -171,7 +176,8 @@ def topic_download(topic_queue):
                 flag = 0
                 while flag == 0:
                     try:
-                        res_img = res_soup.find('div', class_='main-image').find('img')['src']
+                        res_img = res_soup.find(
+                            'div', class_='main-image').find('img')['src']
                         flag = 1
                     except AttributeError:
                         print('捕获AttributeError异常，1s后重试')
@@ -184,7 +190,9 @@ def topic_download(topic_queue):
             # 多线程下载队列中的所有url
             thread_number = 16
             for thread_number_i in range(thread_number):
-                thread = Thread(target=img_download, args=(img_queue, r['href']))
+                thread = Thread(
+                    target=img_download, args=(
+                        img_queue, r['href']))
                 thread.start()
                 thread.join()
 
@@ -194,13 +202,13 @@ def topic_download(topic_queue):
             print(r['href'], r['text'], '爬取完毕')
 
 
-
 if __name__ == '__main__':
     index_url = 'http://www.mzitu.com'
     start_html = get(index_url)
     Soup = BeautifulSoup(start_html.text, 'xml')
 
-    last_page_url = Soup.find('div', class_='nav-links').findAll('a', class_='page-numbers')[-1]['href']
+    last_page_url = Soup.find('div', class_='nav-links').findAll(
+        'a', class_='page-numbers')[-1]['href']
     last_page_number = str(last_page_url).split('/')[-2]
 
     for index in range(1, int(last_page_number) + 1):
@@ -247,6 +255,7 @@ if __name__ == '__main__':
         while not topic_queue.empty():
             time.sleep(0.5)
             continue
-        # TODO 当topic队列为空时，实际上最后的正在执行的几个进程还没执行完，因此会出现：print 该页已经爬取完毕，实际上还没完毕，解决：更改其它的检测方式，而不是检测队列是否为空
+        # TODO 当topic队列为空时，实际上最后的正在执行的几个进程还没执行完，因此会出现：print
+        # 该页已经爬取完毕，实际上还没完毕，解决：更改其它的检测方式，而不是检测队列是否为空
         print('第', index, '页爬取完毕')
     print('全站爬取完毕')
