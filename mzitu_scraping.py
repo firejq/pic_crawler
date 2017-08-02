@@ -132,9 +132,10 @@ def topic_download(topic_queue):
             'text': topic['text']
         }
 
-        dirname = str(r['text']).replace(' ', '_').replace(
-            '\\', '_').replace('/', '_').replace(':', '_').replace(
-            '*', '_').replace('?', '_').replace('"', '_').replace('<', '_').replace('>', '_').replace('|', '_')
+        dirname = str(r['text']).replace(' ', '_').replace('\\', '_').replace(
+            '/', '_').replace(':', '_').replace('*', '_').replace(
+            '?', '_').replace('"', '_').replace('<', '_').replace(
+            '>', '_').replace('|', '_')
         path = os.path.join('D:\\mzitu', dirname)
 
         if os.path.exists(path):
@@ -193,6 +194,7 @@ def topic_download(topic_queue):
             print(r['href'], r['text'], '爬取完毕')
 
 
+
 if __name__ == '__main__':
     index_url = 'http://www.mzitu.com'
     start_html = get(index_url)
@@ -245,5 +247,6 @@ if __name__ == '__main__':
         while not topic_queue.empty():
             time.sleep(0.5)
             continue
-
+        # TODO 当topic队列为空时，实际上最后的正在执行的几个进程还没执行完，因此会出现：print 该页已经爬取完毕，实际上还没完毕，解决：更改其它的检测方式，而不是检测队列是否为空
         print('第', index, '页爬取完毕')
+    print('全站爬取完毕')
