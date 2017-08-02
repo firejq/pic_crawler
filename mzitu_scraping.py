@@ -14,7 +14,7 @@ import time
 #         iplist.append(i.strip())
 #         # print(i.strip())
 #     return iplist
-from multiprocessing import Queue
+from multiprocessing import Queue, Process
 from threading import Thread
 
 import requests
@@ -108,14 +108,14 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
                 print(u'更换6次代理仍旧失败，代理可能已失效，取消代理')
                 return get(url, 3)
 
-def download(queue):
-    while not queue.empty():
-        res_img = queue.get()
+def img_download(img_queue, topic_url):
+    while not img_queue.empty():
+        res_img = img_queue.get()
 
         # 为图片起名
         name = str(res_img).split('/')[-1]
         # 向图片地址发起请求并获取response
-        extra = ['Referer', r['href']]
+        extra = ['Referer', topic_url]
         img = get(url=res_img, extra=extra)
         # 在本地以追加模式创建二进制文件
         f = open(name, 'ab')
@@ -123,6 +123,74 @@ def download(queue):
         f.write(img.content)
         # 关闭文件流对象
         f.close()
+
+def topic_download(topic_queue):
+    while not topic_queue.empty():
+        topic = topic_queue.get()
+        r = {
+            'href': topic['href'],
+            'text': topic['text']
+        }
+
+        dirname = str(r['text']).replace(' ', '_').replace(
+            '\\', '_').replace('/', '_').replace(':', '_').replace(
+            '*', '_').replace('?', '_').replace('"', '_').replace('<', '_').replace('>', '_').replace('|', '_')
+        path = os.path.join('D:\\mzitu', dirname)
+
+        if os.path.exists(path):
+            print(r['href'], r['text'], '文件夹已存在，进行下一个主题的爬取')
+            continue
+        else:
+            print(r['href'], r['text'], '开始爬取')
+            os.makedirs(path)
+            os.chdir(path)
+
+            html = get(r['href']).text
+            res_soup = BeautifulSoup(html, 'lxml')
+
+            # 解决AttributeError异常
+            flag = 0
+            while flag == 0:
+                try:
+                    max_span = res_soup.find('div', class_='pagenavi').findAll('span')[-2].get_text()
+                    flag = 1
+                except AttributeError:
+                    print('捕获AttributeError异常，1s后重试')
+                    time.sleep(3)
+                    res_soup = BeautifulSoup(html, 'lxml')
+                    continue
+
+            img_queue = Queue(maxsize=500)
+            for page in range(1, int(max_span) + 1):
+                page_url = r['href'] + '/' + str(page)
+
+                # 获取图片地址res_img
+                res_soup = BeautifulSoup(get(page_url).text, 'lxml')
+                # 解决AttributeError异常
+                flag = 0
+                while flag == 0:
+                    try:
+                        res_img = res_soup.find('div', class_='main-image').find('img')['src']
+                        flag = 1
+                    except AttributeError:
+                        print('捕获AttributeError异常，1s后重试')
+                        time.sleep(3)
+                        res_soup = BeautifulSoup(get(page_url).text, 'lxml')
+                        continue
+                # 将该主题的所有url放到队列中
+                img_queue.put(res_img)
+
+            # 多线程下载队列中的所有url
+            thread_number = 16
+            for thread_number_i in range(thread_number):
+                thread = Thread(target=img_download, args=(img_queue, r['href']))
+                thread.start()
+                thread.join()
+
+            while not img_queue.empty():
+                time.sleep(0.5)
+                continue
+            print(r['href'], r['text'], '爬取完毕')
 
 
 if __name__ == '__main__':
@@ -158,84 +226,24 @@ if __name__ == '__main__':
         res = list()
         for i in range(0, len(all_a)):
             res.append({'href': all_a[i]['href'], 'text': all_a[i].get_text()})
+
+        topic_queue = Queue(maxsize=50)
+        # 将该页的所有主题加入队列
         for r in res:
-            print(r['href'], r['text'])
-            dirname = str(
-                r['text']).replace(
-                ' ',
-                '_').replace(
-                '\\',
-                '_').replace(
-                    '/',
-                    '_').replace(
-                        ':',
-                        '_').replace(
-                            '*',
-                            '_').replace(
-                                '?',
-                                '_').replace(
-                                    '"',
-                                    '_').replace(
-                                        '<',
-                                        '_').replace(
-                                            '>',
-                                            '_').replace(
-                                                '|',
-                '_')
-            path = os.path.join('D:\\mzitu', dirname)
+            topic_queue.put({
+                'href': r['href'],
+                'text': r['text']
+            })
 
-            if os.path.exists(path):
-                print('文件夹已存在，进行下一个主题的爬取')
-                continue
-            else:
-                os.makedirs(path)
-                os.chdir(path)
+        # 多进程并发进行该页面主题的爬取
+        process_number = 4
+        for process_number_i in range(process_number):
+            process = Process(target=topic_download, args=(topic_queue,))
+            process.start()
 
-                html = get(r['href']).text
-                res_soup = BeautifulSoup(html, 'lxml')
+        # 等待该页面所有topic都下载完毕后才返回
+        while not topic_queue.empty():
+            time.sleep(0.5)
+            continue
 
-                # 解决AttributeError异常
-                flag = 0
-                while flag == 0:
-                    try:
-                        max_span = res_soup.find('div', class_='pagenavi').findAll('span')[-2].get_text()
-                        flag = 1
-                    except AttributeError:
-                        print('捕获AttributeError异常，1s后重试')
-                        time.sleep(3)
-                        res_soup = BeautifulSoup(html, 'lxml')
-                        continue
-
-                queue = Queue(maxsize=500)
-                for page in range(1, int(max_span) + 1):
-                    page_url = r['href'] + '/' + str(page)
-
-                    # 获取图片地址res_img
-                    res_soup = BeautifulSoup(get(page_url).text, 'lxml')
-                    # 解决AttributeError异常
-                    flag = 0
-                    while flag == 0:
-                        try:
-                            res_img = res_soup.find('div', class_='main-image').find('img')['src']
-                            flag = 1
-                        except AttributeError:
-                            print('捕获AttributeError异常，1s后重试')
-                            time.sleep(3)
-                            res_soup = BeautifulSoup(get(page_url).text, 'lxml')
-                            continue
-                    # 将该主题的所有url放到队列中
-                    queue.put(res_img)
-
-                # 多线程下载队列中的所有url
-                thread_number = 16
-                for i in range(thread_number):
-                    thread = Thread(target=download, args=(queue,))
-                    thread.start()
-                    thread.join()
-
-                while not queue.empty():
-                    time.sleep(0.5)
-                    continue
-
-                # time.sleep(1)
         print('第', index, '页爬取完毕')
