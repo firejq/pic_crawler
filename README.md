@@ -7,7 +7,8 @@ Run the script and then get all the images in *D:\mzitu*
 ## Features
 - [x] Dynamic IP Proxy   
 - [x] Dynamic UserAgent  
-- [ ] Multitasking by Coroutines  
+- [x] Multitasking by Multi-Process and Multi-thread
+- [ ] Solve synchronize I/O block by Coroutines  
 - [ ] Anti-duplicate data with MongoDB   
 
 
