@@ -78,7 +78,7 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
             return requests.get(url, headers=headers, timeout=timeout)
         except BaseException:
             if num_retries > 0:  # num_retries:限定的重试次数
-                print(u'获取网页出错，10s后将重新获取，倒数第：',
+                print(u'获取网页出错，10秒后将重新获取，倒数第：',
                       num_retries, u'次')
                 time.sleep(10)
                 return get(url, timeout, num_retries=(num_retries - 1))
@@ -102,7 +102,7 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
                 iplist = getips()
                 IP = ''.join(str(random.choice(iplist)).strip())
                 proxy = {'http': IP}
-                print(u'使用代理获取网页失败，正在更换代理，10S后将重新获取倒数第',
+                print(u'使用代理获取网页失败，正在更换代理，10秒后将重新获取倒数第',
                       num_retries, u'次')
                 print(u'当前代理是：', proxy)
                 return get(url, timeout, proxy, num_retries - 1)
@@ -161,7 +161,7 @@ def topic_download(topic_queue):
                         'span')[-2].get_text()
                     flag = 1
                 except AttributeError:
-                    print('捕获AttributeError异常，1s后重试')
+                    print('捕获AttributeError异常，1秒后重试')
                     time.sleep(3)
                     res_soup = BeautifulSoup(html, 'lxml')
                     continue
@@ -180,7 +180,7 @@ def topic_download(topic_queue):
                             'div', class_='main-image').find('img')['src']
                         flag = 1
                     except AttributeError:
-                        print('捕获AttributeError异常，1s后重试')
+                        print('捕获AttributeError异常，1秒后重试')
                         time.sleep(3)
                         res_soup = BeautifulSoup(get(page_url).text, 'lxml')
                         continue
@@ -224,7 +224,7 @@ if __name__ == '__main__':
                 all_a = Soup.find('ul', id='pins').findAll('span')
                 flag = 1
             except AttributeError:
-                print('捕获AttributeError异常，1s后重试')
+                print('捕获AttributeError异常，1秒后重试')
                 time.sleep(5)
                 Soup = BeautifulSoup(get(url).text, 'lxml')
                 continue
@@ -246,6 +246,7 @@ if __name__ == '__main__':
             })
 
         # 多进程并发进行该页面主题的爬取
+        # TODO 开了多进程后，即便程序结束运行，仍有很多个进程驻留在内存中，怎么让这些无用进程自动销毁？
         process_number = 4
         for process_number_i in range(process_number):
             process = Process(target=topic_download, args=(topic_queue,))
@@ -259,3 +260,4 @@ if __name__ == '__main__':
         # 该页已经爬取完毕，实际上还没完毕，解决：更改其它的检测方式，而不是检测队列是否为空
         print('第', index, '页爬取完毕')
     print('全站爬取完毕')
+    exit()
