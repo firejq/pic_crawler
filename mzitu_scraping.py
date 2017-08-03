@@ -110,6 +110,7 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
                 print(u'更换6次代理仍旧失败，代理可能已失效，取消代理')
                 return get(url, 3)
 
+
 async def img_get(url, timeout=None, proxy=None, num_retries=6, extra=None):
     '''
     自定义请求逻辑：
@@ -253,23 +254,15 @@ def topic_download(topic_queue):
                 # 将该主题的所有url放到列表中
                 img_list.append(res_img)
 
-            # for img_url_i in img_list:
-            #     print(img_url_i)
-            #
-            # exit()
-
+            begin_time = time.time()
             loop = asyncio.get_event_loop()
             tasks = [img_download(img_url, r['href']) for img_url in img_list]
-            print('开始进入事件循环')
+            # print('开始进入事件循环')
             loop.run_until_complete(asyncio.wait(tasks))
-            print('事件循环结束')
+            # print('事件循环结束')
             loop.close()
-
-
-            print(r['href'], r['text'], '爬取完毕')
-
-
-
+            print(r['href'], r['text'], '爬取完毕，耗时【'
+                  + str(time.time() - begin_time) + '】秒')
 
 
 if __name__ == '__main__':
