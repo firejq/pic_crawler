@@ -1,3 +1,4 @@
+import asyncio
 import os
 import random
 import time
@@ -15,7 +16,6 @@ import time
 #         # print(i.strip())
 #     return iplist
 from multiprocessing import Queue, Process
-from threading import Thread
 
 import requests
 from bs4 import BeautifulSoup
@@ -111,21 +111,18 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
                 return get(url, 3)
 
 
-def img_download(img_queue, topic_url):
-    while not img_queue.empty():
-        res_img = img_queue.get()
-
-        # 为图片起名
-        name = str(res_img).split('/')[-1]
-        # 向图片地址发起请求并获取response
-        extra = ['Referer', topic_url]
-        img = get(url=res_img, extra=extra)
-        # 在本地以追加模式创建二进制文件
-        f = open(name, 'ab')
-        # 将response的二进制内容写入到文件中
-        f.write(img.content)
-        # 关闭文件流对象
-        f.close()
+async def img_download(img_url, topic_url):
+    # 为图片起名
+    name = str(img_url).split('/')[-1]
+    # 向图片地址发起请求并获取response
+    extra = ['Referer', topic_url]
+    img = await get(url=img_url, extra=extra)
+    # 在本地以追加模式创建二进制文件
+    f = open(name, 'ab')
+    # 将response的二进制内容写入到文件中
+    f.write(img.content)
+    # 关闭文件流对象
+    f.close()
 
 
 def topic_download(topic_queue):
@@ -166,7 +163,7 @@ def topic_download(topic_queue):
                     res_soup = BeautifulSoup(html, 'lxml')
                     continue
 
-            img_queue = Queue(maxsize=500)
+            img_list = list()
             for page in range(1, int(max_span) + 1):
                 page_url = r['href'] + '/' + str(page)
 
@@ -184,22 +181,19 @@ def topic_download(topic_queue):
                         time.sleep(3)
                         res_soup = BeautifulSoup(get(page_url).text, 'lxml')
                         continue
-                # 将该主题的所有url放到队列中
-                img_queue.put(res_img)
+                # 将该主题的所有url放到列表中
+                img_list.append(res_img)
 
-            # 多线程下载队列中的所有url
-            thread_number = 16
-            for thread_number_i in range(thread_number):
-                thread = Thread(
-                    target=img_download, args=(
-                        img_queue, r['href']))
-                thread.start()
-                thread.join()
+            loop = asyncio.get_event_loop()
+            tasks = [img_download(img_url, r['href']) for img_url in img_list]
+            loop.run_until_complete(asyncio.wait(tasks))
+            loop.close()
 
-            while not img_queue.empty():
-                time.sleep(0.5)
-                continue
+
             print(r['href'], r['text'], '爬取完毕')
+
+
+
 
 
 if __name__ == '__main__':
