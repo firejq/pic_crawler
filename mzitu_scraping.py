@@ -1,6 +1,7 @@
 import asyncio
 import os
 import random
+import sqlite3
 import time
 # def getips():
 #     '''
@@ -181,7 +182,7 @@ async def img_get(url, timeout=None, proxy=None, num_retries=6, extra=None):
                 return get(url, 3)
 
 
-async def img_download(img_url, topic_url):
+async def img_download(img_url, topic_url, conn):
     # 为图片起名
     name = str(img_url).split('/')[-1]
     # 向图片地址发起请求并获取response
@@ -193,31 +194,42 @@ async def img_download(img_url, topic_url):
     f.write(img.content)
     # 关闭文件流对象
     f.close()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO mzt_img (img_url, topic_url, finished_time)'
+                   'VALUES (?, ?, ?)', (img_url, topic_url,
+                    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
+    cursor.close()
+    conn.commit()
+
 
 
 def topic_download(topic_queue):
+    conn = sqlite3.connect(db_path)
+
     while not topic_queue.empty():
         topic = topic_queue.get()
-        r = {
-            'href': topic['href'],
-            'text': topic['text']
-        }
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM mzt_topic WHERE topic_url = ?',
+                       (topic['href'], ))
+        query_topic_result = cursor.fetchall()
 
-        dirname = str(r['text']).replace(' ', '_').replace('\\', '_').replace(
-            '/', '_').replace(':', '_').replace('*', '_').replace(
-            '?', '_').replace('"', '_').replace('<', '_').replace(
-            '>', '_').replace('|', '_')
-        path = os.path.join('D:\\mzitu', dirname)
-
-        if os.path.exists(path):
-            print(r['href'], r['text'], '文件夹已存在，进行下一个主题的爬取')
-            continue
+        if query_topic_result.__len__() > 0:
+            print(topic['href'], topic['text'], '该主题已爬取完毕，不再重复爬取')
         else:
-            print(r['href'], r['text'], '开始爬取')
-            os.makedirs(path)
+            print(topic['href'], topic['text'], '开始爬取')
+
+            dirname = str(topic['text']).replace(' ', '_').replace(
+                '\\', '_').replace('/', '_').replace(':', '_').replace(
+                '*', '_').replace('?', '_').replace('"', '_').replace(
+                '<', '_').replace('>', '_').replace('|', '_')
+            path = os.path.join(home_path, dirname)
+            if not os.path.exists(path):
+                # 若文件夹还未创建，则创建该主题的文件夹
+                os.makedirs(path)
+            # 切换到该主题文件夹中
             os.chdir(path)
 
-            html = get(r['href']).text
+            html = get(topic['href']).text
             res_soup = BeautifulSoup(html, 'lxml')
 
             # 解决AttributeError异常
@@ -235,7 +247,7 @@ def topic_download(topic_queue):
 
             img_list = []
             for page in range(1, int(max_span) + 1):
-                page_url = r['href'] + '/' + str(page)
+                page_url = topic['href'] + '/' + str(page)
 
                 # 获取图片地址res_img
                 res_soup = BeautifulSoup(get(page_url).text, 'lxml')
@@ -251,19 +263,38 @@ def topic_download(topic_queue):
                         time.sleep(3)
                         res_soup = BeautifulSoup(get(page_url).text, 'lxml')
                         continue
-                # 将该主题的所有url放到列表中
-                img_list.append(res_img)
+                # 将该主题中在数据库中不存在的url放到待下载列表中
+                cursor.execute('SELECT id FROM mzt_img WHERE img_url = ?',
+                               (res_img, ))
+                query_img_result = cursor.fetchall()
+                if query_img_result.__len__() == 0:
+                    img_list.append(res_img)
 
             begin_time = time.time()
             loop = asyncio.get_event_loop()
-            tasks = [img_download(img_url, r['href']) for img_url in img_list]
+            tasks = [img_download(img_url, topic['href'], conn)
+                     for img_url in img_list]
             # print('开始进入事件循环')
             loop.run_until_complete(asyncio.wait(tasks))
             # print('事件循环结束')
             loop.close()
-            print(r['href'], r['text'], '爬取完毕，耗时【'
+
+            cursor.execute(
+                'INSERT INTO mzt_topic (topic_name, topic_url, finished_time) '
+                'VALUES (?, ?, ?)',
+                (dirname, topic['href'],
+                 time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+            )
+            cursor.close()
+            conn.commit()
+            print(topic['href'], topic['text'], '爬取完毕，耗时【'
                   + str(time.time() - begin_time) + '】秒')
 
+    conn.close()
+
+
+home_path = 'D:\\mzitu_test'
+db_path = os.path.join(home_path, 'mzitu_scraping.db')
 
 if __name__ == '__main__':
     index_url = 'http://www.mzitu.com'
@@ -273,6 +304,37 @@ if __name__ == '__main__':
     last_page_url = Soup.find('div', class_='nav-links').findAll(
         'a', class_='page-numbers')[-1]['href']
     last_page_number = str(last_page_url).split('/')[-2]
+
+    if not os.path.exists(home_path):
+        os.mkdir(home_path)
+
+    # 判断数据库是否存在
+    if os.path.exists(db_path):
+        conn = sqlite3.connect(db_path)
+    else:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        sql = '''
+            CREATE TABLE "mzt_img" (
+            "id"  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            "img_url"  TEXT NOT NULL,
+            "topic_url"  TEXT NOT NULL,
+            "finished_time"  TEXT NOT NULL
+            );
+        '''
+        cursor.execute(sql)
+        sql = '''
+            CREATE TABLE "mzt_topic" (
+            "id"  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            "topic_name"  TEXT NOT NULL,
+            "topic_url"  TEXT NOT NULL,
+            "finished_time"  TEXT NOT NULL
+            );
+        '''
+        cursor.execute(sql)
+
+        cursor.close()
+        conn.close()
 
     for index in range(1, int(last_page_number) + 1):
         print('开始爬取第', index, '页')
@@ -296,16 +358,19 @@ if __name__ == '__main__':
             all_a[i] = all_a[i].find('a')
         all_a = all_a[0:len(all_a):3]
 
-        res = list()
-        for i in range(0, len(all_a)):
-            res.append({'href': all_a[i]['href'], 'text': all_a[i].get_text()})
+        # res = list()
+        # for i in range(0, len(all_a)):
+        #     res.append({
+        #       'href': all_a[i]['href'],
+        #       'text': all_a[i].get_text()
+        #      })
 
         topic_queue = Queue(maxsize=50)
         # 将该页的所有主题加入队列
-        for r in res:
+        for i in range(0, len(all_a)):
             topic_queue.put({
-                'href': r['href'],
-                'text': r['text']
+                'href': all_a[i]['href'],
+                'text': all_a[i].get_text()
             })
 
         # 多进程并发进行该页面主题的爬取
