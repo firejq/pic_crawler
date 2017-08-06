@@ -213,6 +213,7 @@ def topic_download(topic_queue):
                        (topic['href'], ))
         query_topic_result = cursor.fetchall()
 
+
         if query_topic_result.__len__() > 0:
             print(topic['href'], topic['text'], '该主题已爬取完毕，不再重复爬取')
         else:
