@@ -250,7 +250,7 @@ if __name__ == '__main__':
 
         # 多进程并发进行该页面主题的爬取
         # TODO 开了多进程后，即便程序结束运行，仍有很多个进程驻留在内存中，怎么让这些无用进程自动销毁？
-        process_number = 1
+        process_number = 4
         for process_number_i in range(process_number):
             process = Process(target=topic_download, args=(topic_queue,))
             process.start()
