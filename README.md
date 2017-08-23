@@ -9,7 +9,7 @@ Run the script and then get all the images in *D:\mzitu*
 - [x] Dynamic UserAgent  
 - [x] Multitasking by Multi-Process and Multi-thread
 - [x] Solve synchronize I/O block by Coroutines  
-- [x] Anti-duplicate data with MongoDB   
+
 
 
 
