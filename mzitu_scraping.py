@@ -2,24 +2,29 @@
 import os
 import random
 import time
-# def getips():
-#     '''
-#     爬取haoip.cc上可用的代理ip
-#     :return: 代理ip列表
-#     '''
-#     iplist = []
-#     html = requests.get("http://haoip.cc/tiqu.htm", 'lxml')
-#     iplistn = re.findall(r'r/>(.*?)<b', html.text, re.S)
-#     for ip in iplistn:
-#         i = re.sub('\n', '', ip)
-#         iplist.append(i.strip())
-#         # print(i.strip())
-#     return iplist
+from configparser import ConfigParser
 from multiprocessing import Queue, Process
 from threading import Thread
 
 import requests
 from bs4 import BeautifulSoup
+
+
+def getini(ini_path):
+    '''
+    读取ini配置
+    :param ini_path:
+    :return:
+    '''
+    dd_path = ''
+    cf = ConfigParser()
+    try:
+        cf.read(ini_path)
+        dd_path = cf.get('baseconf', 'download_path')
+    except BaseException:
+        dd_path = 'D:\\mzitu'
+    finally:
+        return dd_path
 
 
 def getips():
@@ -129,7 +134,7 @@ def img_download(img_queue, topic_url):
         f.close()
 
 
-def topic_download(topic_queue):
+def topic_download(topic_queue, download_path):
     while not topic_queue.empty():
         topic = topic_queue.get()
         r = {
@@ -141,7 +146,7 @@ def topic_download(topic_queue):
             '/', '_').replace(':', '_').replace('*', '_').replace(
             '?', '_').replace('"', '_').replace('<', '_').replace(
             '>', '_').replace('|', '_')
-        path = os.path.join('D:\\mzitu', dirname)
+        path = os.path.join(download_path, dirname)
 
         if os.path.exists(path):
             print(r['href'], r['text'], '文件夹已存在，进行下一个主题的爬取')
@@ -206,6 +211,9 @@ def topic_download(topic_queue):
 
 
 if __name__ == '__main__':
+    ini_path = 'mzitu_scraping.ini'
+    download_path = getini(ini_path=ini_path)
+
     index_url = 'http://www.mzitu.com'
     start_html = get(index_url)
     Soup = BeautifulSoup(start_html.text, 'xml')
@@ -252,7 +260,8 @@ if __name__ == '__main__':
         # TODO 开了多进程后，即便程序结束运行，仍有很多个进程驻留在内存中，怎么让这些无用进程自动销毁？
         process_number = 4
         for process_number_i in range(process_number):
-            process = Process(target=topic_download, args=(topic_queue,))
+            process = Process(target=topic_download,
+                              args=(topic_queue, download_path))
             process.start()
 
         # 等待该页面所有topic都下载完毕后才返回
@@ -264,4 +273,3 @@ if __name__ == '__main__':
         print('第', index, '页爬取完毕')
     print('全站爬取完毕')
     exit()
-
