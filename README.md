@@ -2,16 +2,25 @@
 A image crawler for [mzitu](http://www.mzitu.com/, "mzitu")   
 
 ## Use
-1. Install the requirements
+1. setup
+```
+git clone https://github.com/firejq/mzitu_crawler.git
+```
+2. Install the dependences
 
 ```powershell
 pip install -r requirements.txt
 ```
-2. Run the crawler script and then get all the images in **D:\mzitu**
+3. Run the crawler script and then get all the images in **D:\mzitu**
 ```powershell
 python mzitu_scraping.py
 ```
 
+4. To modify the download path, you can edit the **mzitu_scraping.ini**:
+```
+[baseconf]
+download_path=YOUR_DOWNLOAD_PATH
+```
 
 ## Features
 - [x] Dynamic IP Proxy   
