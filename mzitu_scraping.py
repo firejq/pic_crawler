@@ -11,11 +11,11 @@ from bs4 import BeautifulSoup
 
 
 def getini(ini_path):
-    '''
+    """
     读取ini配置
     :param ini_path:
     :return:
-    '''
+    """
     dd_path = ''
     cf = ConfigParser()
     try:
@@ -28,10 +28,10 @@ def getini(ini_path):
 
 
 def getips():
-    '''
+    """
     爬取http://www.xicidaili.com/nn/首页的高匿代理ip
     :return: 代理ip列表
-    '''
+    """
     headers = {
         'User-Agent': ('Mozilla/5.0 (Windows NT 6.1; Win64; x64) '
                        'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -46,11 +46,12 @@ def getips():
         ip_info = ips[i]
         tds = ip_info.find_all('td')
         ip_list.append(tds[1].text + ':' + tds[2].text)
+
     return ip_list
 
 
 def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
-    '''
+    """
     自定义请求逻辑：
     先尝试直接连接请求，随机使用User-Agent，
     若请求失败，重试6次，
@@ -62,7 +63,7 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
     :param proxy:
     :param num_retries:
     :return:
-    '''
+    """
     user_agents = [
         ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
          '(KHTML, like Gecko) Chrome/60.0.3072.0 Safari/537.36'),
@@ -137,6 +138,12 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
 
 
 def img_download(img_queue, topic_url):
+    """
+    下载单个图片连接
+    :param img_queue:
+    :param topic_url:
+    :return:
+    """
     while not img_queue.empty():
         res_img = img_queue.get()
         # 为图片起名
@@ -153,6 +160,12 @@ def img_download(img_queue, topic_url):
 
 
 def topic_download(topic_queue, download_path):
+    """
+    下载主题的所有图片
+    :param topic_queue:
+    :param download_path:
+    :return:
+    """
     while not topic_queue.empty():
         topic = topic_queue.get()
         r = {
