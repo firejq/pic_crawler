@@ -11,8 +11,8 @@ from bs4 import BeautifulSoup
 
 
 def getini(ini_path):
-    """
-    读取ini配置
+    """读取ini配置
+
     :param ini_path:
     :return:
     """
@@ -28,8 +28,8 @@ def getini(ini_path):
 
 
 def getips():
-    """
-    爬取http://www.xicidaili.com/nn/首页的高匿代理ip
+    """爬取http://www.xicidaili.com/nn/首页的高匿代理ip
+
     :return: 代理ip列表
     """
     headers = {
@@ -51,13 +51,13 @@ def getips():
 
 
 def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
-    """
-    自定义请求逻辑：
+    """自定义请求逻辑：
     先尝试直接连接请求，随机使用User-Agent，
     若请求失败，重试6次，
     若重试6次之后仍旧失败，开始使用代理ip，
     若使用代理ip请求失败，则随机更换代理ip，最高尝试更换6次代理ip，
     更换6次代理ip后仍旧请求失败，放弃使用代理，延长timeout直接连接
+
     :param url:
     :param timeout:
     :param proxy:
@@ -138,8 +138,8 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
 
 
 def img_download(img_queue, topic_url):
-    """
-    下载单个图片连接
+    """下载单个图片连接
+
     :param img_queue:
     :param topic_url:
     :return:
@@ -160,8 +160,8 @@ def img_download(img_queue, topic_url):
 
 
 def topic_download(topic_queue, download_path):
-    """
-    下载主题的所有图片
+    """下载主题的所有图片
+
     :param topic_queue:
     :param download_path:
     :return:
