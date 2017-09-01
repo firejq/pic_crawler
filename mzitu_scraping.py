@@ -33,7 +33,9 @@ def getips():
     :return: 代理ip列表
     '''
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'
+        'User-Agent': ('Mozilla/5.0 (Windows NT 6.1; Win64; x64) '
+                       'AppleWebKit/537.36 (KHTML, like Gecko) '
+                       'Chrome/53.0.2785.143 Safari/537.36')
     }
     url = 'http://www.xicidaili.com/nn/'
     web_data = requests.get(url, headers=headers)
@@ -61,22 +63,39 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
     :param num_retries:
     :return:
     '''
-    UserAgents = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3072.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.32',
-        ''
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586',
-        'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 BIDUBrowser/8.3 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Maxthon/4.9.2.1000 Chrome/39.0.2146.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36 Core/1.47.277.400 QQBrowser/9.4.7658.400',
-        'Mozilla/5.0 (Linux; Android 5.0; SM-N9100 Build/LRX21V) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/37.0.0.0 Mobile Safari/537.36 MicroMessenger/6.0.2.56_r958800.520 NetType/WIFI',
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Mobile/11D257 QQ/5.2.1.302 NetType/WIFI Mem/28']
-    headers = {'User-Agent': random.choice(UserAgents)}
+    user_agents = [
+        ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+         '(KHTML, like Gecko) Chrome/60.0.3072.0 Safari/537.36'),
+        ('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:46.0) Gecko/20100101 '
+         'Firefox/46.0'),
+        ('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML,'
+         ' like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.32'),
+        ('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.57.2 '
+         '(KHTML, like Gecko) Version/5.1.7 Safari/534.57.2'),
+        ('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 '
+         '(KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36'),
+        ('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 '
+         '(KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36'),
+        ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+         '(KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586'),
+        ('Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) '
+         'like Gecko'),
+        ('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, '
+         'like Gecko) Chrome/47.0.2526.106 BIDUBrowser/8.3 Safari/537.36'),
+        ('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, '
+         'like Gecko) Maxthon/4.9.2.1000 Chrome/39.0.2146.0 Safari/537.36'),
+        ('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, '
+         'like Gecko) Chrome/47.0.2526.80 Safari/537.36 Core/1.47.277.400 '
+         'QQBrowser/9.4.7658.400'),
+        ('Mozilla/5.0 (Linux; Android 5.0; SM-N9100 Build/LRX21V) '
+         'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 '
+         'Chrome/37.0.0.0 Mobile Safari/537.36 '
+         'MicroMessenger/6.0.2.56_r958800.520 NetType/WIFI'),
+        ('Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) '
+         'AppleWebKit/537.51.2 (KHTML, like Gecko) Mobile/11D257 '
+         'QQ/5.2.1.302 NetType/WIFI Mem/28')
+    ]
+    headers = {'User-Agent': random.choice(user_agents)}
     if extra is not None:
         headers[extra[0]] = extra[1]
     if proxy is None:
@@ -120,7 +139,6 @@ def get(url, timeout=None, proxy=None, num_retries=6, extra=None):
 def img_download(img_queue, topic_url):
     while not img_queue.empty():
         res_img = img_queue.get()
-
         # 为图片起名
         name = str(res_img).split('/')[-1]
         # 向图片地址发起请求并获取response
