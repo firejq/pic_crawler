@@ -26,6 +26,10 @@ python mzitu_scraping.py
 download_path=YOUR_DOWNLOAD_PATH
 ```
 
+## TODO
+- [ ] 优化多线程下的程序中断
+
+
 ## Features
 - [x] Dynamic IP Proxy   
 - [x] Dynamic UserAgent  

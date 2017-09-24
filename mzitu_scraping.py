@@ -242,66 +242,71 @@ def topic_download(topic_queue, download_path):
 
 
 if __name__ == '__main__':
-    ini_path = 'mzitu_scraping.ini'
-    download_path = getini(ini_path=ini_path)
+    try:
+        ini_path = 'mzitu_scraping.ini'
+        download_path = getini(ini_path=ini_path)
 
-    index_url = 'http://www.mzitu.com'
-    start_html = get(index_url)
-    Soup = BeautifulSoup(start_html.text, 'xml')
+        index_url = 'http://www.mzitu.com'
+        start_html = get(index_url)
+        Soup = BeautifulSoup(start_html.text, 'xml')
 
-    last_page_url = Soup.find('div', class_='nav-links').findAll(
-        'a', class_='page-numbers')[-1]['href']
-    last_page_number = str(last_page_url).split('/')[-2]
+        last_page_url = Soup.find('div', class_='nav-links').findAll(
+            'a', class_='page-numbers')[-1]['href']
+        last_page_number = str(last_page_url).split('/')[-2]
 
-    for index in range(1, int(last_page_number) + 1):
-        print('开始爬取第', index, '页')
-        url = index_url + '/page/' + str(index)
-        Soup = BeautifulSoup(get(url).text, 'lxml')
+        for index in range(1, int(last_page_number) + 1):
+            print('开始爬取第', index, '页')
+            url = index_url + '/page/' + str(index)
+            Soup = BeautifulSoup(get(url).text, 'lxml')
 
-        # 为解决因网络问题随机出现的AttributeError异常，加此循环逻辑
-        # TODO 寻找更好的解决方案
-        flag = 0
-        while flag == 0:
-            try:
-                all_a = Soup.find('ul', id='pins').findAll('span')
-                flag = 1
-            except AttributeError:
-                print('捕获AttributeError异常，1秒后重试')
-                time.sleep(5)
-                Soup = BeautifulSoup(get(url).text, 'lxml')
+            # 为解决因网络问题随机出现的AttributeError异常，加此循环逻辑
+            # TODO 寻找更好的解决方案
+            flag = 0
+            while flag == 0:
+                try:
+                    all_a = Soup.find('ul', id='pins').findAll('span')
+                    flag = 1
+                except AttributeError:
+                    print('捕获AttributeError异常，1秒后重试')
+                    time.sleep(5)
+                    Soup = BeautifulSoup(get(url).text, 'lxml')
+                    continue
+
+            for i in range(0, len(all_a)):
+                all_a[i] = all_a[i].find('a')
+            all_a = all_a[0:len(all_a):3]
+
+            res = list()
+            for i in range(0, len(all_a)):
+                res.append({'href': all_a[i]['href'],
+                            'text': all_a[i].get_text()})
+
+            topic_queue = Queue(maxsize=50)
+            # 将该页的所有主题加入队列
+            for r in res:
+                topic_queue.put({
+                    'href': r['href'],
+                    'text': r['text']
+                })
+
+            # 多进程并发进行该页面主题的爬取
+            # TODO 开了多进程后，即便程序结束运行，仍有很多个进程驻留在内存中，怎么让这些无用进程自动销毁？
+            process_number = 4
+            for process_number_i in range(process_number):
+                process = Process(target=topic_download,
+                                  args=(topic_queue, download_path))
+                process.start()
+
+            # 等待该页面所有topic都下载完毕后才返回
+            while not topic_queue.empty():
+                time.sleep(0.5)
                 continue
+            # TODO 当topic队列为空时，实际上最后的正在执行的几个进程还没执行完，因此会出现：print
+            # 该页已经爬取完毕，实际上还没完毕，解决：更改其它的检测方式，而不是检测队列是否为空
+            print('第', index, '页爬取完毕')
 
-        for i in range(0, len(all_a)):
-            all_a[i] = all_a[i].find('a')
-        all_a = all_a[0:len(all_a):3]
-
-        res = list()
-        for i in range(0, len(all_a)):
-            res.append({'href': all_a[i]['href'], 'text': all_a[i].get_text()})
-
-        topic_queue = Queue(maxsize=50)
-        # 将该页的所有主题加入队列
-        for r in res:
-            topic_queue.put({
-                'href': r['href'],
-                'text': r['text']
-            })
-
-        # 多进程并发进行该页面主题的爬取
-        # TODO 开了多进程后，即便程序结束运行，仍有很多个进程驻留在内存中，怎么让这些无用进程自动销毁？
-        process_number = 4
-        for process_number_i in range(process_number):
-            process = Process(target=topic_download,
-                              args=(topic_queue, download_path))
-            process.start()
-
-        # 等待该页面所有topic都下载完毕后才返回
-        while not topic_queue.empty():
-            time.sleep(0.5)
-            continue
-        # TODO 当topic队列为空时，实际上最后的正在执行的几个进程还没执行完，因此会出现：print
-        # 该页已经爬取完毕，实际上还没完毕，解决：更改其它的检测方式，而不是检测队列是否为空
-        print('第', index, '页爬取完毕')
-
-    print('全站爬取完毕')
-    exit()
+        print('全站爬取完毕')
+        exit(0)
+    except KeyboardInterrupt:
+        print('程序中断')
+        exit(0)
