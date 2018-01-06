@@ -22,8 +22,11 @@ def getini(ini_path):
         cf.read(ini_path)
         dd_path = cf.get('baseconf', 'download_path')
     except BaseException:
-        dd_path = 'D:\\mzitu'
+        print('没有检测到配置文件，采取默认配置，图片保存在当前 images 目录下。')
     finally:
+        if dd_path == '':
+            cur_path = os.getcwd().split(os.path.sep)
+            dd_path = os.path.sep.join(cur_path) + os.path.sep + 'images'
         return dd_path
 
 
