@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b802e38c-c476-4d4f-83bc-12a4c1b73faa" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/requirement.txt" afterPath="$PROJECT_DIR$/requirement.txt" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -52,8 +53,8 @@
       <file leaf-file-name="requirement.txt" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/requirement.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="13" selection-end-column="41" />
+            <state relative-caret-position="21">
+              <caret line="1" column="16" lean-forward="false" selection-start-line="1" selection-start-column="16" selection-end-line="1" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -764,7 +765,14 @@
       <option name="project" value="LOCAL" />
       <updated>1515247287618</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="add .gitignore">
+      <created>1515247486973</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1515247486973</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -847,7 +855,8 @@
     <MESSAGE value="add TODO" />
     <MESSAGE value="修改图片保存的默认路径为当前 images 目录" />
     <MESSAGE value="edit README.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="edit README.md" />
+    <MESSAGE value="add .gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="add .gitignore" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -1113,8 +1122,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/requirement.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="13" selection-end-column="41" />
+        <state relative-caret-position="21">
+          <caret line="1" column="16" lean-forward="false" selection-start-line="1" selection-start-column="16" selection-end-line="1" selection-end-column="16" />
           <folding />
         </state>
       </provider>
