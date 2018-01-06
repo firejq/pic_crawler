@@ -37,7 +37,7 @@ download_path=YOUR_DOWNLOAD_PATH
 - [x] Solve synchronize I/O block by Coroutines  
 
 ## License
-The mzitu_crawler is under the MIT license.
+The mzitu_crawler is under the [MIT](https://github.com/firejq/mzitu_crawler/blob/master/LICENSE) license.
 
 
 
