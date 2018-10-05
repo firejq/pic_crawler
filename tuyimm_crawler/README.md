@@ -17,8 +17,9 @@ pip install -r requirements.txt
 ```
 3. Run the crawler script and then get all the images
 ```powershell
-python tuyimm_scraping.py
+python tuyimm_scraping.py [page_id]
 ```
+eg: For `http://www.tuyimm.vip/thread-16290-1-1.html`, page id is `16290`.
 
 4. To modify the download path, you can edit the **mzitu_scraping.ini**:
 ```
