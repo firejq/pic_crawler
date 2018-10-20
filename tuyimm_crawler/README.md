@@ -15,12 +15,16 @@ Python 3.6
     ```powershell
     pip install -r requirements.txt
     ```
-1. Run the crawler script and then get all the images
+1. Run the crawler script
     ```powershell
-    python tuyimm_scraping.py [page_id]
+    python tuyimm_scraping.py
     ```
-  
-    eg: For `http://www.tuyimm.vip/thread-16290-1-1.html`, page id is `16290`.
+  	And then input the thread_id of your target theme.
+
+    eg: 
+    - For `http://www.tuyimm.vip/thread-16290-1-1.html` thread_id is `16290`, so you can run `python tuyimm_scraping.py` and then input `16290`.
+    - For `http://www.tuyimm.vip/thread-7071-1-2.html` thread_id is `7071-1-2`, so you can run `python tuyimm_scraping.py` and then input `7071-1-2`.
+    - To exit, input `exit`.
 
 1. To modify the download path, you can edit the **tuyimm_scraping.ini**:
     ```

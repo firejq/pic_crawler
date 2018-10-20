@@ -124,56 +124,77 @@ if __name__ == '__main__':
     # print(download_path)
 
     driver = get_driver()
+    while True:
+        theme_id = input('Please input theme id:')
+        if theme_id == 'exit' or theme_id == '':
+            break
+        elif '-' not in theme_id:
+            theme_id += '-1-1'
+        url = 'http://www.tuyimm.vip/thread-' + theme_id + '.html'
+        # url = 'http://www.tuyimm.vip/thread-16290-1-1.html'
+        print('开始检测 ' + url)
 
-    url = 'http://www.tuyimm.vip/thread-' + sys.argv[1] + '-1-1.html'
-    # url = 'http://www.tuyimm.vip/thread-16290-1-1.html'
-    print(url)
+        driver.get(url)
+        print('网页资源加载完毕')
 
-    driver.get(url)
-    print('网页资源加载完毕')
+        # 获取主题标题
+        subject = driver.find_element_by_css_selector('#thread_subject').text
+        print(subject)
+        dirname = subject.replace(' ', '_').replace('\\', '_').replace(
+            '/', '_').replace(':', '_').replace('*', '_').replace(
+            '?', '_').replace('"', '_').replace('<', '_').replace(
+            '>', '_').replace('|', '_')
+        path = os.path.join(download_path, dirname)
+        if not os.path.exists(path):
+            # 创建主题文件夹
+            os.makedirs(path)
+        else:
+            is_continue = input('该主题目录已存在，是否覆盖下载？y/n')
+            if is_continue == 'n':
+                continue
+        # 切换工作目录
+        os.chdir(path)
 
-    # 获取主题标题
-    subject = driver.find_element_by_css_selector('#thread_subject').text
-    print(subject)
-    dirname = subject.replace(' ', '_').replace('\\', '_').replace(
-        '/', '_').replace(':', '_').replace('*', '_').replace(
-        '?', '_').replace('"', '_').replace('<', '_').replace(
-        '>', '_').replace('|', '_')
-    path = os.path.join(download_path, dirname)
-    if not os.path.exists(path):
-        # 创建主题文件夹
-        os.makedirs(path)
-    # 切换工作目录
-    os.chdir(path)
+        imgs_small = driver.find_elements_by_class_name('pattimg_zoom')
+        print('共检测到' + str(len(imgs_small)) + '张图片')
+        pic_num = 0
+        for i in range(len(imgs_small) + 1):
+            if i == 0:
+                ActionChains(driver).click(imgs_small[0]).perform()
+                time.sleep(0.5)
 
-    imgs_small = driver.find_elements_by_class_name('pattimg_zoom')
-    print('共检测到' + str(len(imgs_small)) + '张图片')
-    pic_num = 0
-    for i in range(len(imgs_small) + 1):
-        if i == 0:
-            ActionChains(driver).click(imgs_small[0]).perform()
+            # ActionChains(driver).click(imgs_small[i]).perform()
+            # WebDriverWait(driver, 20).until(
+            # lambda d: d.find_element_by_id('imgzoom_zoom').is_displayed())
+
             time.sleep(0.5)
+            while True:
+                try:
+                    img_big = driver.find_element_by_id('imgzoom_zoom')
+                    break
+                except NoSuchElementException as e:
+                    time.sleep(0.5)
+                    continue
+            try:
+                title = driver.find_element_by_class_name('imgzoom_title')
+                title = title.text
+            except NoSuchElementException as e:
+                title = 'None-' + str(i) + '.jpg'
+            try:
+                img_src = img_big.get_attribute('src')
+            except Exception as e:
+                print('第' + str(i) + '张图片下载出现问题', title)
+                continue
+            print('正在下载第' + str(i) + '张图片', title, img_src)
+            # 下载图片
+            img_download(img_src)
+            pic_num += 1
 
-        # ActionChains(driver).click(imgs_small[i]).perform()
-        # WebDriverWait(driver, 20).until(
-        #     lambda d: d.find_element_by_id('imgzoom_zoom').is_displayed())
+            next_btn = driver.find_element_by_id('zimg_next')
+            # close_btn = driver.find_element_by_class_name('imgclose')
+            ActionChains(driver).click(next_btn).perform()
 
-        time.sleep(0.5)
-        img_big = driver.find_element_by_id('imgzoom_zoom')
-        try:
-            title = driver.find_element_by_class_name('imgzoom_title')
-            title = title.text
-        except NoSuchElementException as e:
-            title = 'None-' + str(i) + '.jpg'
-        img_src = img_big.get_attribute('src')
-        print('正在下载第' + str(i) + '张图片', title, img_src)
-        # 下载图片
-        img_download(img_src)
-        pic_num += 1
-
-        next_btn = driver.find_element_by_id('zimg_next')
-        # close_btn = driver.find_element_by_class_name('imgclose')
-        ActionChains(driver).click(next_btn).perform()
+        print('下载完成，总计【' + str(pic_num) + '】张图')
 
     driver.quit()
-    print('下载完成，总计【' + str(pic_num) + '】张图')
+    print('退出下载工具')
